@@ -1,0 +1,97 @@
+[
+  {
+    "id": "da_001",
+    "pattern": "Caller claims to be from CBI, police, or ED, says victim's Aadhaar or bank account is linked to a crime, threatens arrest unless victim stays on video call",
+    "category": "digital_arrest"
+  },
+  {
+    "id": "da_002",
+    "pattern": "Caller instructs victim not to disconnect call or tell family, isolates victim under threat of legal action",
+    "category": "digital_arrest"
+  },
+  {
+    "id": "da_003",
+    "pattern": "Fraudster asks victim to transfer money to a verification account for RBI or court escrow, promises refund after clearance",
+    "category": "digital_arrest"
+  },
+  {
+    "id": "da_004",
+    "pattern": "Caller uses fake government portal or ID card shown on video to appear legitimate, uses uniformed background",
+    "category": "digital_arrest"
+  },
+  {
+    "id": "da_005",
+    "pattern": "Scammer pressures urgency, says case will worsen within hours, discourages independent verification or calling family or lawyer",
+    "category": "digital_arrest"
+  },
+  {
+    "id": "courier_001",
+    "pattern": "Caller claims to be from FedEx, DHL, or customs, says a parcel in victim's name contains illegal drugs or fake passports, connects to fake police officer",
+    "category": "courier_scam"
+  },
+  {
+    "id": "courier_002",
+    "pattern": "Fraudster says package is held at customs and requires payment of a clearance fee to release it",
+    "category": "courier_scam"
+  },
+  {
+    "id": "otp_001",
+    "pattern": "Caller asks victim to share OTP or verification code received via SMS to process a refund, prize, or cashback",
+    "category": "otp_phishing"
+  },
+  {
+    "id": "otp_002",
+    "pattern": "Caller impersonates bank official asking for card number, CVV, or net banking password to prevent account block",
+    "category": "otp_phishing"
+  },
+  {
+    "id": "sextortion_001",
+    "pattern": "Caller or video caller threatens to leak recorded intimate images or video unless victim pays money immediately",
+    "category": "sextortion"
+  },
+  {
+    "id": "refund_001",
+    "pattern": "Caller claims victim overpaid a bill or is owed a refund, asks to install remote access app like AnyDesk or TeamViewer to process it",
+    "category": "fake_refund"
+  },
+  {
+    "id": "refund_002",
+    "pattern": "Fraudster asks victim to enter amount in UPI app claiming it is to receive money but is actually a payment request",
+    "category": "fake_refund"
+  },
+  {
+    "id": "job_scam_001",
+    "pattern": "Caller offers a high paying work from home job and asks for registration fee or security deposit upfront",
+    "category": "job_scam"
+  },
+  {
+    "id": "loan_scam_001",
+    "pattern": "Caller offers instant loan approval without documents but asks for processing fee to be paid first via UPI",
+    "category": "loan_scam"
+  },
+  {
+    "id": "safe_001",
+    "pattern": "Bank customer service calling to confirm a recent transaction and asking if the customer authorized it, never asks for OTP or password",
+    "category": "safe"
+  },
+  {
+    "id": "safe_002",
+    "pattern": "Telemarketer offering a credit card upgrade or insurance policy, no threats or urgency, customer can decline and hang up freely",
+    "category": "safe"
+  },
+  {
+    "id": "safe_003",
+    "pattern": "Delivery executive calling to confirm address before dropping off a package, no payment requested over call",
+    "category": "safe"
+  },
+  {
+    "id": "safe_004",
+    "pattern": "School or hospital calling to confirm an appointment or share routine updates about a family member",
+    "category": "safe"
+  },
+  {
+    "id": "safe_005",
+    "pattern": "Government helpline callback after citizen filed a complaint, confirms complaint number, does not ask for money or OTP",
+    "category": "safe"
+  }
+]

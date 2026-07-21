@@ -1,0 +1,244 @@
+VIGIL — DESIGN SYSTEM BRIEF v2.0
+
+“Build the product judges remember after every other demo.”
+
+This document defines the visual DNA of Vigil. It is intentionally
+opinionated. Do not substitute generic AI dashboards, admin templates,
+or default design systems.
+
+PRODUCT PHILOSOPHY
+
+Vigil is not a dashboard. Vigil is an intelligence operating system.
+
+Users should never feel like they are browsing data. They should feel
+like they are watching intelligence emerge.
+
+Core emotional journey:
+
+Arrival → Control → Discovery → Understanding → Confidence → Action
+
+Every interaction should reinforce one idea:
+
+Information becomes Intelligence.
+
+------------------------------------------------------------------------
+
+DESIGN NORTH STAR
+
+Design Vigil as if Apple designed Palantir Gotham.
+
+Take inspiration from:
+
+-   Apple’s restraint
+-   Linear’s clarity
+-   Stripe’s polish
+-   Palantir’s operational depth
+-   Arc Browser’s navigation
+-   Figma’s precision
+-   Raycast’s speed
+-   Vercel’s minimalism
+-   Attio’s CRM elegance
+-   Notion Calendar’s calmness
+
+Avoid:
+
+-   Cyberpunk
+-   Hacker aesthetics
+-   Neon glows
+-   Matrix green
+-   Overdone glassmorphism
+-   Generic AI chat layouts
+-   Admin templates
+
+------------------------------------------------------------------------
+
+WEBSITE INSPIRATION
+
+Study these deeply for philosophy, not imitation.
+
+1.  Linear
+2.  Stripe
+3.  Apple
+4.  Vercel
+5.  Arc Browser
+6.  Figma
+7.  Raycast
+8.  Attio
+9.  Framer
+10. Clerk
+11. Notion Calendar (Cron)
+12. Retool
+13. Grafana
+14. Observable
+15. Palantir AIP / Gotham
+
+Extract: - spacing - typography - motion - navigation - hierarchy -
+visual rhythm - interaction patterns
+
+Never copy layouts.
+
+------------------------------------------------------------------------
+
+VISUAL LANGUAGE
+
+Theme: Deep graphite. Midnight navy. Steel. Muted slate. Warm whites.
+
+The interface should feel expensive, not flashy.
+
+Accent colors exist only to communicate meaning.
+
+Suggested palette:
+
+Background: #0B1220 Surface: #111827 Elevated: #1A2333 Primary Accent:
+#3B82F6 Success: #22C55E Warning: #F59E0B Critical: #EF4444 Primary
+Text: #F8FAFC Secondary Text: #94A3B8 Borders: #243244
+
+------------------------------------------------------------------------
+
+TYPOGRAPHY
+
+Primary: Inter
+
+Fallback: Geist
+
+Massive confident headings. Quiet labels. Comfortable body text.
+Generous spacing.
+
+No ALL CAPS. No futuristic fonts.
+
+------------------------------------------------------------------------
+
+MOTION PRINCIPLES
+
+Animation exists to explain, never decorate.
+
+Transitions: 200–300 ms
+
+Use: - opacity - blur - translate - scale (very subtle)
+
+Never: - bounce - elastic - flashy particles
+
+Graph: Nodes attract. Edges grow. Clusters breathe. Connections reveal
+themselves.
+
+Maps: Heat diffuses. Markers fade in naturally.
+
+Drawers: They unfold like opening a classified dossier.
+
+Loading: Never use spinners.
+
+Instead show an intelligence pipeline:
+
+Receiving evidence… Extracting entities… Finding relationships…
+Cross-rereferencing reports… Building investigation… Threat confirmed.
+
+------------------------------------------------------------------------
+
+PAGE PHILOSOPHY
+
+Signal: Answer one question: “Is this fraud?”
+
+Nexus: “Who is connected?”
+
+Atlas: “Where is it happening?”
+
+Casebook: “What action should be taken?”
+
+No page should try to answer more than one core question.
+
+------------------------------------------------------------------------
+
+COMPONENT PHILOSOPHY
+
+Every component should have purpose.
+
+Use: - persistent command rail - command palette - investigation
+timeline - evidence cards - network graph - heatmap - slide-over
+casebook - rich empty states - skeleton loaders - contextual filters -
+inline explanations
+
+Avoid decorative widgets.
+
+------------------------------------------------------------------------
+
+MICROINTERACTIONS
+
+When new intelligence arrives:
+
+Don’t simply update a number.
+
+Instead:
+
+-   Signal feed updates quietly.
+-   New graph node fades into existence.
+-   Connected edges grow.
+-   Atlas receives a subtle hotspot pulse.
+-   Casebook notification appears.
+-   Timeline inserts a new event.
+
+The product should feel alive.
+
+------------------------------------------------------------------------
+
+DATA VISUALIZATION
+
+Avoid: - Pie charts - Donuts - Decorative gauges
+
+Prefer: - Network graphs - Timelines - Heatmaps - Investigation trees -
+Entity relationship views - Progressive disclosure
+
+Every chart must answer a question.
+
+------------------------------------------------------------------------
+
+ACCESSIBILITY
+
+Keyboard-first.
+
+Readable typography.
+
+Never rely on color alone.
+
+Every important interaction should have visual feedback.
+
+------------------------------------------------------------------------
+
+THE HERO MOMENT
+
+The demo’s unforgettable sequence:
+
+Citizen uploads a suspicious screenshot.
+
+System responds:
+
+Receiving Evidence… Extracting Entities… Cross-referencing Reports…
+Known Pattern Detected… 14 Linked Complaints Found… Building
+Investigation… Casebook Ready.
+
+The graph expands. The map gains a hotspot. The investigation timeline
+updates.
+
+No extra clicks.
+
+The system feels alive.
+
+------------------------------------------------------------------------
+
+FINAL DESIGN COMMAND
+
+Build Vigil as though it were a real enterprise intelligence platform
+used every day by investigators.
+
+Every screen should communicate trust.
+
+Every animation should communicate meaning.
+
+Every interaction should communicate intelligence.
+
+The judges should never think:
+
+“This is a nice hackathon dashboard.”
+
+They should think:
+
+“This feels like a product that already exists.”

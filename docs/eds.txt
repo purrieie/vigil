@@ -1,0 +1,339 @@
+DOCUMENT 1 — Engineering Design Specification
+1. Executive Technical Overview
+Vigil is a real-time fraud-intelligence platform with four functional surfaces (Signal, Nexus, Atlas, Casebook) sitting on a single FastAPI backend. The core technical bet: cheap/free multimodal extraction → structured JSON → graph write → refetch → animate, completed in under 6 seconds end-to-end.
+Two ingestion paths (WhatsApp webhook, Web Sandbox) feed one pipeline. Two datastores serve two different jobs: Neo4j for relationship traversal (the "proof"), Supabase Postgres for chronological/audit logging and blob storage (the "receipt"). The investigator UI stays in sync via lightweight polling + diff-animation rather than a persistent socket layer, keeping the highest-risk demo surface simple.
+Non-negotiable engineering constraints:
+
+Zero paid APIs by default (Groq free tier, Florence-2 local or Gemini Vision free tier as a benchmarked fallback, Neo4j AuraDB free tier, Supabase free tier)
+Stability over novelty in every dependency choice (React 18, not 19, unless a specific feature demands it)
+<6s round-trip Signal verdict
+Graph render capped at 100–150 nodes
+No tunnel-based service (ngrok) anywhere in the demo-day architecture
+Every live-data-dependent demo path needs a pre-tested static fallback
+
+2. System Architecture
+┌─────────────┐     ┌──────────────┐     ┌───────────────────┐
+│  WhatsApp   │     │  Web Sandbox │     │   Investigator     │
+│  Webhook    │     │  (React)     │     │   Control Plane    │
+└──────┬──────┘     └──────┬───────┘     │   (React, polling)│
+       │                   │             └─────────▲──────────┘
+       └─────────┬─────────┘                       │
+                  ▼                     Poll GET /nexus/graph,
+         ┌─────────────────┐            /atlas/hotspots (2-3s)
+         │   FastAPI Core  │────────────────────────┘
+         │  (Async Router) │
+         └───┬─────────┬───┘
+             │         │
+   ┌─────────▼───┐ ┌───▼─────────────┐
+   │ Extraction  │ │ Persistence     │
+   │ Service     │ │ Service         │
+   │(Whisper/    │ │(Neo4j + Supabase)│
+   │ Florence-2  │ └──────────────────┘
+   │  or Gemini  │
+   │  Vision /   │
+   │  Groq Llama3)│
+   └─────────────┘
+Layering:
+
+Edge layer: WhatsApp webhook + Web Sandbox — both normalize to the same internal IntakePayload.
+Core API layer: FastAPI, stateless, async. Owns orchestration only; delegates heavy compute to the Extraction Service.
+Extraction layer: Whisper (via Groq) + document-vision model run concurrently via asyncio.gather, then Groq Llama 3 synthesizes. The document-vision model is chosen by benchmark, not assumption (see §11).
+Persistence layer: Neo4j (graph writes via templated Cypher) + Supabase (raw media, audit rows, evidence hashes).
+Sync layer: investigator frontend polls read endpoints on a short interval; new/changed nodes are diffed client-side and animated in. No WebSocket dependency for core functionality — kept as an optional stretch enhancement only, never a blocker.
+
+3. Frontend Architecture
+Stack: React 18 (Vite) + Tailwind + shadcn/ui + Framer Motion + React-Force-Graph-2D + React-Leaflet.
+(React 18 locked deliberately — no dependency in this stack requires 19's concurrent features, and hackathon time is better spent not chasing version-mismatch bugs in react-force-graph/react-leaflet.)
+Routing model: Single-page control plane, no react-router page transitions — state-driven view switching (activeLens: 'nexus' | 'atlas') to preserve context per the IA.
+Layout regions (fixed):
+
+Header — global nav, sync status indicator
+SignalFeed (left pane, persistent)
+Lens (center pane, toggled Nexus/Atlas)
+CasebookDrawer (right, slide-out on node/cluster click)
+
+Data layer:
+
+useGraphData / useAtlasData hooks — poll their endpoint every 2–3s via TanStack Query (refetchInterval), diff previous vs new node/edge sets, feed the delta to Framer Motion for arrival animation
+Global store: Zustand (feed state, selected node, drawer open/closed)
+Server-state fetching/caching: TanStack Query throughout
+
+4. Backend Architecture
+Stack: FastAPI (Python 3.11), Uvicorn, async throughout.
+Service boundaries:
+
+routers/intake.py — WhatsApp webhook + Web Sandbox POST endpoint (shared handler)
+routers/graph.py — Nexus read endpoints (node/cluster fetch)
+routers/atlas.py — geospatial read endpoints
+routers/casebook.py — PDF generation trigger + fetch
+services/extraction.py — Whisper + document-vision + Groq Llama 3 orchestration, behind a swappable interface for the vision leg
+services/graph_writer.py — Cypher templating + MERGE logic
+services/storage.py — Supabase upload/signed URL logic
+core/config.py, core/models.py, core/constants.py, core/settings.py — see §6
+models/ — Pydantic schemas (shared between request/response validation and internal DTOs)
+prompts/ — all LLM prompt templates, loaded at startup (see §6)
+
+5. Folder Structure
+vigil/
+├── frontend/
+│   ├── src/
+│   │   ├── components/
+│   │   │   ├── signal/          # SignalFeed, ThreatCard
+│   │   │   ├── nexus/           # GraphCanvas, NodeDetail
+│   │   │   ├── atlas/           # MapCanvas, HotspotLayer
+│   │   │   ├── casebook/        # CasebookDrawer, ExportButton
+│   │   │   └── shared/          # Header, EmptyState, LoadingSteps
+│   │   ├── hooks/
+│   │   │   ├── useGraphData.ts   # polling + diff logic
+│   │   │   └── useAtlasData.ts
+│   │   ├── store/                # Zustand slices
+│   │   ├── lib/                  # api client, formatters
+│   │   ├── pages/
+│   │   │   └── SandboxIntake.tsx  # the fake-WhatsApp fallback UI
+│   │   └── App.tsx
+│   └── vite.config.ts
+├── backend/
+│   ├── app/
+│   │   ├── routers/
+│   │   ├── services/
+│   │   ├── models/
+│   │   ├── core/
+│   │   │   ├── config.py
+│   │   │   ├── models.py         # model names/endpoints (Groq model IDs, vision checkpoint path)
+│   │   │   ├── constants.py      # thresholds, node caps, verdict copy
+│   │   │   └── settings.py
+│   │   └── main.py
+│   ├── prompts/
+│   │   ├── entity_extraction.md
+│   │   ├── risk_analysis.md
+│   │   ├── casebook.md
+│   │   ├── report_generation.md
+│   │   └── graph_reasoning.md
+│   ├── logs/
+│   │   ├── api.log
+│   │   ├── errors.log
+│   │   └── graph.log
+│   ├── models_local/              # Florence-2 weights/cache, if used
+│   └── requirements.txt
+├── infra/
+│   ├── neo4j/                     # seed script, constraints
+│   └── supabase/                  # schema.sql, storage policies
+└── docs/
+6. Config, Prompts & Logging
+Config — no os.getenv() scattered through the codebase. Everything reads from one place:
+core/config.py     # pydantic Settings class, loads .env once
+core/models.py     # which model strings/endpoints are active (incl. vision-model swap point)
+core/constants.py  # threat-score thresholds, node caps, verdict copy
+core/settings.py   # dev/demo environment switch
+All other modules from app.core.config import settings.
+Prompts — every LLM prompt is a versioned file, not an inline string:
+prompts/entity_extraction.md
+prompts/risk_analysis.md
+prompts/casebook.md
+prompts/report_generation.md
+prompts/graph_reasoning.md
+Loaded once at startup, templated with {{variables}}. When a prompt needs tuning under time pressure, it's a one-line edit, not a code change.
+Logging — structured, from hour one, not bolted on after something breaks:
+logs/api.log      # request/response level
+logs/errors.log   # exceptions, retries, fallback triggers
+logs/graph.log    # Cypher writes, MERGE outcomes, cluster detection results
+One Python logger per concern, rotating file handlers.
+7. Component Hierarchy (Frontend)
+App
+├── Header (sync status indicator)
+├── SignalFeed
+│   └── ThreatCard[] (Critical | Caution | Clear variants)
+├── Lens
+│   ├── GraphCanvas (Nexus)
+│   │   ├── NodeRenderer
+│   │   └── EdgeRenderer
+│   └── MapCanvas (Atlas)
+│       ├── HotspotMarker[]
+│       └── HeatLayer
+├── CasebookDrawer
+│   ├── EntitySummary
+│   ├── TranscriptPreview
+│   ├── EvidenceThumbnail
+│   └── GenerateCasebookButton
+└── SandboxIntake (separate route, mimics WhatsApp thread)
+    ├── ChatBubble[]
+    ├── AttachmentPicker
+    └── VerdictCard
+8. API Contracts
+MethodPathPurposePOST/intake/whatsappTwilio webhook receiverPOST/intake/sandboxWeb sandbox submission (audio/image/text)GET/nexus/graph?depth=2&node_id=Fetch node + N-degree neighbors (polled)GET/atlas/hotspotsFetch geospatial points (polled)GET/casebook/{cluster_id}Fetch structured casebook dataPOST/casebook/{cluster_id}/exportTrigger PDF generation
+(No WebSocket endpoint required for core functionality. If time allows, a /ws/live broadcaster can be added as a pure enhancement on top of the polling contract, never as a replacement for it.)
+9. Request/Response Schemas
+POST /intake/sandbox
+json// Request (multipart/form-data)
+{
+  "session_id": "string",
+  "text": "string | null",
+  "audio": "file | null",
+  "image": "file | null"
+}
+
+// Response
+{
+  "verdict": "CRITICAL | CAUTION | CLEAR",
+  "threat_score": 0-100,
+  "message": "string",
+  "matched_case_count": "int | null",
+  "processing_ms": "int"
+}
+Internal: Groq Llama3 structured output
+json{
+  "phones": ["string"],
+  "upi_ids": ["string"],
+  "names": ["string"],
+  "badge_ids": ["string"],
+  "coercion_confidence": 0-100,
+  "synthetic_voice_likelihood": 0-100,
+  "forged_doc_likelihood": 0-100,
+  "threat_score": 0-100,
+  "summary": "string"
+}
+GET /nexus/graph response
+json{
+  "nodes": [{ "id": "string", "type": "Phone|UPID|BadgeNumber|Bank_Branch|Citizen|Syndicate_Cluster", "label": "string", "scam_count": "int" }],
+  "edges": [{ "source": "string", "target": "string", "type": "REPORTED|USED_IN|LINKED_TO|MULE_FOR" }]
+}
+GET /atlas/hotspots response
+json{
+  "points": [{ "lat": "float", "lng": "float", "severity": "string", "illustrative": true }]
+}
+10. Neo4j Schema
+Node labels & key properties:
+
+Citizen { id, reported_at }
+Phone { number (unique), scam_count }
+UPID { upi_id (unique), scam_count }
+BadgeNumber { badge_id (unique), issuing_authority_claimed }
+Bank_Branch { branch_code, name }
+Syndicate_Cluster { id, size, first_seen, last_seen }
+
+Relationships: REPORTED, USED_IN, LINKED_TO, MULE_FOR
+Constraints:
+cypherCREATE CONSTRAINT phone_unique IF NOT EXISTS FOR (p:Phone) REQUIRE p.number IS UNIQUE;
+CREATE CONSTRAINT upi_unique IF NOT EXISTS FOR (u:UPID) REQUIRE u.upi_id IS UNIQUE;
+CREATE CONSTRAINT badge_unique IF NOT EXISTS FOR (b:BadgeNumber) REQUIRE b.badge_id IS UNIQUE;
+Write pattern (MERGE, no duplication):
+cypherMERGE (p:Phone {number: $phone})
+  ON CREATE SET p.scam_count = 1
+  ON MATCH SET p.scam_count = p.scam_count + 1
+MERGE (c:Citizen {id: $citizen_id})
+MERGE (c)-[:REPORTED]->(p)
+11. Supabase Schema
+sqlcreate table evidence (
+  id uuid primary key default gen_random_uuid(),
+  session_id text not null,
+  type text check (type in ('audio','image','text')),
+  storage_path text,
+  md5_hash text,
+  created_at timestamptz default now()
+);
+
+create table reports (
+  id uuid primary key default gen_random_uuid(),
+  session_id text not null,
+  threat_score int,
+  verdict text,
+  extracted_json jsonb,
+  neo4j_node_ids text[],
+  created_at timestamptz default now()
+);
+
+create table audit_log (
+  id uuid primary key default gen_random_uuid(),
+  report_id uuid references reports(id),
+  action text,
+  actor text,
+  created_at timestamptz default now()
+);
+Storage buckets: evidence-audio, evidence-images (private, signed-URL access only).
+12. AI Pipeline (with Benchmark Gate)
+Step 0 (mandatory, before pipeline code is written):
+  Benchmark candidate document-vision model on 5–10 real forged-document
+  samples (fake badges, seals, warrant layouts, varied blur/quality).
+
+  Candidate A: Florence-2 (local, free, zero API cost, ~232M params)
+  Candidate B: Gemini Vision (free tier, network dependency)
+
+  Decision rule:
+    IF Florence-2 reliably extracts badge numbers / UPI IDs / printed text
+       from forged-document-style images → use Florence-2
+    ELSE → use Gemini Vision for the image leg only, everything else unchanged
+
+[audio file] ──► Groq Whisper (whisper-large-v3) ──► transcript:str
+[image file] ──► document-vision model (winner of benchmark) ──► ocr_tokens:str
+                         │
+                         ▼
+        Groq Llama 3 (structured JSON mode prompt, from prompts/entity_extraction.md)
+                         │
+                         ▼
+              validated Pydantic model
+                         │
+                         ▼
+              graph_writer.merge_entities()
+The vision leg sits behind a single interface function (extract_document(image) -> ocr_tokens) specifically so the benchmark's outcome is a config swap, not a rewrite.
+Concurrency: transcript + OCR extraction run via asyncio.gather; Llama 3 call is sequential (depends on both, or whichever modality is present — missing modality passes null, prompt instructs the model to proceed on partial evidence rather than fail).
+13. Sequence Diagram — Full Intake to Investigator View
+Citizen        Sandbox/WA        FastAPI         Extraction      Neo4j     Investigator UI
+  │                │                │                │             │           │
+  ├─ upload ──────►│                │                │             │           │
+  │                ├─ POST /intake ►│                │             │           │
+  │                │                ├─ store media ─►Supabase      │           │
+  │                │                ├─ extract ─────►│             │           │
+  │                │                │◄── JSON ───────┤             │           │
+  │                │                ├─ MERGE Cypher ─────────────►│           │
+  │                │                │◄── cluster info ────────────┤           │
+  │                │◄── verdict ────┤                │             │           │
+  │◄── message ────┤                │                │             │           │
+  │                │                │                │             │◄─ poll ───┤
+  │                │                │                │             │  every    │
+  │                │                │                │             │  2-3s     │
+  │                │                │                │             │           ├─ diff + animate new node
+14. State Management
+
+Zustand store slices: signalSlice (live feed array), graphSlice (nodes/edges + selected node), atlasSlice (hotspot points), casebookSlice (drawer open/closed, active cluster)
+TanStack Query drives all data fetching with refetchInterval (2–3s) on graph/atlas queries; on each fetch, a diff against the previous cached result determines which nodes are "new" and should animate in
+No event-bus / socket dispatch layer required
+
+15. Authentication Flow
+Per scope decision (no multi-role RBAC), auth stays minimal:
+
+Single shared investigator login (Supabase Auth, email/password, one seeded account) gating the Control Plane route only
+Sandbox intake route is public (citizen-facing, unauthenticated — mirrors real WhatsApp)
+
+16. File Upload Flow
+1. Client requests upload → POST /intake/sandbox (multipart)
+2. FastAPI streams file to Supabase Storage bucket (async client)
+3. Compute MD5 hash server-side (streaming hash, not full buffer load)
+4. Insert `evidence` row with storage_path + md5_hash
+5. Generate short-lived signed URL for internal extraction service use
+6. Temp local copies deleted after extraction completes
+17. Graph Update Flow
+1. Groq JSON validated against Pydantic schema
+2. graph_writer.merge_entities() opens one Neo4j session/transaction
+3. For each entity type: MERGE node, ON CREATE/ON MATCH scam_count logic
+4. MERGE relationships (Citizen→Phone REPORTED, Phone→UPID USED_IN, etc.)
+5. Run 2nd-degree traversal query from newly touched nodes to detect cluster membership
+6. If cluster found/expanded: update Syndicate_Cluster.size, last_seen
+7. Return touched node_ids + cluster_id to caller
+8. Next investigator poll picks up the change automatically — no explicit push required
+18. Error Handling
+Failure pointHandlingDocument-vision model exception/timeoutCatch, log, proceed with ocr_tokens: null, flag degraded_extraction: trueGroq Whisper timeoutSame graceful-degradation pattern; falls back to text-only if providedGroq Llama 3 malformed JSONOne retry with reinforced "return ONLY valid JSON" instruction; on second failure, use pre-tested static fallback payloadNeo4j write failureLog to audit_log + errors.log; verdict still returned to citizen — graph write retried async, never blocks citizen responseNeo4j cold-start latencyPre-demo heartbeat ping (ops checklist item)Frontend polling failureTanStack Query auto-retry with backoff; stale data shown with a subtle "reconnecting" indicator, never a blank screen
+General principle: citizen-facing verdict path never blocks on investigator-facing graph/sync path.
+19. Caching
+
+TanStack Query client-side cache for graph/atlas GET endpoints, refetchInterval handles freshness
+No server-side cache layer needed at hackathon scale (node count capped ~150)
+Document-vision model weights (if Florence-2 wins the benchmark) loaded once at FastAPI startup, not per-request
+
+20. Deployment
+
+Frontend: Vercel (free tier), auto-deploy from main
+Backend (dev only): local machine + ngrok tunnel, for convenience while building
+Backend (demo): deployed to Railway or Render (verify free-tier RAM is sufficient for the chosen document-vision model before committing; if using Render, add it to the same pre-demo warm-up checklist as Neo4j since free tier spins down on idle). Fly.io as a third option. If none hold up under testing, run the backend on the local presenting machine directly — no tunnel required when judges are in the room.
+Neo4j: AuraDB Free instance, seeded pre-demo, heartbeat-pinged 5 min before demo start
+Supabase: Free tier project, storage buckets pre-created with policies
+Environment config via .env, loaded once through core/config.py — never committed
