@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Vigil — Stay Safe from Digital Fraud</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          primary: "#004ac6",
+          "primary-container": "#2563eb",
+          "on-primary": "#ffffff",
+          secondary: "#1b6d24",
+          "secondary-container": "#a0f399",
+          "secondary-fixed": "#a3f69c",
+          tertiary: "#943700",
+          error: "#ba1a1a",
+          background: "#faf8ff",
+          "surface-container-low": "#f3f3fe",
+          "surface-container-lowest": "#ffffff",
+          "surface-dim": "#d9d9e5",
+          "on-surface": "#191b23",
+          "on-surface-variant": "#434655",
+          "outline-variant": "#c3c6d7",
+        },
+        spacing: { gutter: "24px", xs: "8px", sm: "16px", md: "24px", lg: "32px", xl: "48px", "container-max": "1200px" },
+        fontFamily: { sans: ["Inter", "sans-serif"] },
+      },
+    },
+  };
+</script>
+<style>
+  .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+  .glass-card { background: rgba(255,255,255,0.85); backdrop-filter: blur(8px); border: 1px solid #E5E7EB; }
+  .reveal { opacity: 0; transform: translateY(24px); transition: all .7s ease; }
+  .reveal.show { opacity: 1; transform: translateY(0); }
+</style>
+</head>
+<body class="bg-background text-on-surface font-sans">
+
+<header class="fixed top-0 w-full z-50 bg-surface-container-lowest shadow-sm border-b-4 border-b-secondary-fixed">
+  <nav class="flex justify-between items-center px-gutter h-20 max-w-container-max mx-auto">
+    <a href="index.html" class="text-2xl font-bold text-primary flex items-center gap-2">
+      <span class="material-symbols-outlined" style="font-size:32px">verified_user</span>
+      Vigil
+    </a>
+    <div class="hidden md:flex gap-8 items-center text-sm font-medium">
+      <a href="index.html" class="text-primary font-bold border-b-2 border-primary pb-1">Home</a>
+      <a href="scam-check.html" class="text-on-surface-variant hover:text-primary transition-colors">Check a Call</a>
+      <a href="fraud-map.html" class="text-on-surface-variant hover:text-primary transition-colors">Fraud Map</a>
+      <a href="case-intel.html" class="text-on-surface-variant hover:text-primary transition-colors">Case Intelligence</a>
+    </div>
+  </nav>
+</header>
+
+<main class="pt-20">
+  <section class="relative overflow-hidden pt-16 pb-24 md:pt-32 md:pb-32">
+    <div class="max-w-container-max mx-auto px-gutter grid grid-cols-1 lg:grid-cols-12 items-center gap-12">
+      <div class="lg:col-span-7 reveal">
+        <div class="inline-flex items-center gap-2 px-3 py-1.5 bg-secondary-container text-secondary rounded-full text-xs font-semibold mb-5">
+          <span class="material-symbols-outlined text-sm" style="font-variation-settings:'FILL' 1">security</span>
+          Public Safety AI Platform
+        </div>
+        <h1 class="text-4xl md:text-6xl font-extrabold tracking-tight mb-5 max-w-2xl">
+          Vigil — Stay Safe from Digital Fraud
+        </h1>
+        <p class="text-lg text-on-surface-variant mb-8 max-w-xl leading-relaxed">
+          AI-powered protection against scam calls, courier fraud, and digital arrest scams.
+          Paste what a caller said and get an instant, plain-language safety verdict.
+        </p>
+        <div class="flex flex-wrap gap-4">
+          <a href="scam-check.html" class="bg-primary text-white px-8 py-4 rounded-lg font-semibold hover:brightness-110 transition-all shadow-md flex items-center gap-2">
+            Check a Call Now
+            <span class="material-symbols-outlined">arrow_forward</span>
+          </a>
+          <a href="fraud-map.html" class="border border-primary text-primary px-8 py-4 rounded-lg font-semibold hover:bg-primary/5 transition-all">
+            View Fraud Map
+          </a>
+        </div>
+      </div>
+      <div class="lg:col-span-5 flex justify-center reveal">
+        <div class="relative w-full max-w-md aspect-square flex items-center justify-center">
+          <div class="absolute inset-0 bg-primary/5 rounded-full blur-3xl"></div>
+          <div class="glass-card shadow-lg rounded-[32px] p-12 flex items-center justify-center border-2 border-outline-variant/30">
+            <span class="material-symbols-outlined text-primary" style="font-size:160px;font-variation-settings:'FILL' 0,'wght' 200">shield</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="py-16 bg-surface-container-low">
+    <div class="max-w-container-max mx-auto px-gutter grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div class="bg-white p-8 rounded-xl shadow-sm border border-outline-variant/30 reveal">
+        <div id="stat1" class="text-primary text-4xl font-extrabold mb-1">0</div>
+        <div class="text-on-surface-variant text-sm font-medium">Known Scam Patterns Tracked</div>
+      </div>
+      <div class="bg-white p-8 rounded-xl shadow-sm border border-outline-variant/30 reveal">
+        <div class="text-primary text-4xl font-extrabold mb-1">24/7</div>
+        <div class="text-on-surface-variant text-sm font-medium">AI Threat Analysis</div>
+      </div>
+      <div class="bg-white p-8 rounded-xl shadow-sm border border-outline-variant/30 reveal">
+        <div class="text-primary text-4xl font-extrabold mb-1">Instant</div>
+        <div class="text-on-surface-variant text-sm font-medium">Verdict Response Time</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="py-20 bg-white">
+    <div class="max-w-container-max mx-auto px-gutter text-center mb-16 reveal">
+      <h2 class="text-3xl font-bold mb-3">Analyze threats in seconds</h2>
+      <div class="w-16 h-1.5 bg-secondary mx-auto rounded-full"></div>
+    </div>
+    <div class="max-w-container-max mx-auto px-gutter">
+      <div class="flex flex-col md:flex-row items-start justify-between gap-12 relative">
+        <div class="hidden md:block absolute top-12 left-0 w-full h-0.5 bg-outline-variant/40 -z-10"></div>
+        <div class="flex-1 flex flex-col items-center text-center group reveal">
+          <div class="w-24 h-24 rounded-full bg-white border-2 border-primary flex items-center justify-center mb-4 shadow-sm group-hover:scale-110 transition-transform">
+            <span class="material-symbols-outlined text-4xl text-primary">content_paste</span>
+          </div>
+          <h3 class="text-xl font-semibold mb-2">1. Paste transcript</h3>
+          <p class="text-on-surface-variant max-w-xs">Describe or paste what the suspicious caller said.</p>
+        </div>
+        <div class="flex-1 flex flex-col items-center text-center group reveal">
+          <div class="w-24 h-24 rounded-full bg-white border-2 border-primary flex items-center justify-center mb-4 shadow-sm group-hover:scale-110 transition-transform">
+            <span class="material-symbols-outlined text-4xl text-primary">psychology</span>
+          </div>
+          <h3 class="text-xl font-semibold mb-2">2. AI analyzes</h3>
+          <p class="text-on-surface-variant max-w-xs">Our engine scans for known scam patterns and tactics.</p>
+        </div>
+        <div class="flex-1 flex flex-col items-center text-center group reveal">
+          <div class="w-24 h-24 rounded-full bg-white border-2 border-primary flex items-center justify-center mb-4 shadow-sm group-hover:scale-110 transition-transform">
+            <span class="material-symbols-outlined text-4xl text-primary">verified</span>
+          </div>
+          <h3 class="text-xl font-semibold mb-2">3. Get instant verdict</h3>
+          <p class="text-on-surface-variant max-w-xs">Receive a safety score and clear advice on what to do.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="py-20 bg-primary-container text-white text-center">
+    <div class="max-w-container-max mx-auto px-gutter reveal">
+      <h2 class="text-3xl font-bold mb-4">Don't fall for the trap. Verify first.</h2>
+      <p class="text-lg mb-8 max-w-2xl mx-auto opacity-90">
+        Protecting your family from digital fraud starts with one check.
+      </p>
+      <a href="scam-check.html" class="inline-flex bg-white text-primary px-8 py-4 rounded-lg font-semibold hover:shadow-lg transition-all items-center gap-2">
+        Check Suspicious Activity
+        <span class="material-symbols-outlined">shield</span>
+      </a>
+    </div>
+  </section>
+</main>
+
+<footer class="bg-surface-dim border-t border-outline-variant py-8">
+  <div class="flex flex-col md:flex-row justify-between items-center px-gutter max-w-container-max mx-auto gap-4">
+    <div class="text-lg font-bold text-on-surface">Vigil</div>
+    <div class="text-on-surface-variant text-sm text-center">
+      Vigil is an AI-assisted tool. For emergencies, contact local police or dial <strong class="text-error">1930</strong> (Cybercrime Helpline).
+    </div>
+  </div>
+</footer>
+
+<script>
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('show'); });
+  }, { threshold: 0.15 });
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+  let count = 0;
+  const target = 19;
+  const counterEl = document.getElementById('stat1');
+  const counterObserver = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting && count === 0) {
+        const interval = setInterval(() => {
+          count++;
+          counterEl.textContent = count + "+";
+          if (count >= target) clearInterval(interval);
+        }, 60);
+      }
+    });
+  }, { threshold: 0.5 });
+  counterObserver.observe(counterEl);
+</script>
+</body>
+</html>

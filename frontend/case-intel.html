@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Vigil Case Intelligence | Law Enforcement Portal</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          primary: "#004ac6", "primary-container": "#2563eb",
+          secondary: "#1b6d24", "secondary-fixed": "#a3f69c",
+          tertiary: "#943700", error: "#ba1a1a",
+          background: "#faf8ff", "surface-container-low": "#f3f3fe", "surface-container-high": "#e7e7f3",
+          "surface-container-lowest": "#ffffff", "surface-dim": "#d9d9e5",
+          "on-surface": "#191b23", "on-surface-variant": "#434655", "outline-variant": "#c3c6d7",
+        },
+        spacing: { gutter: "24px", xs: "8px", sm: "16px", md: "24px", lg: "32px", xl: "48px", "container-max": "1200px" },
+        fontFamily: { sans: ["Inter", "sans-serif"] },
+      },
+    },
+  };
+</script>
+<style>
+  .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+  .chip { background:#dbe1ff; color:#00174b; }
+  .spin { animation: spin 1s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .fade-in { animation: fadeIn .5s ease forwards; }
+  @keyframes fadeIn { from { opacity:0; transform:translateY(10px);} to {opacity:1; transform:translateY(0);} }
+</style>
+</head>
+<body class="bg-surface-container-low text-on-surface font-sans min-h-screen flex flex-col">
+
+<header class="fixed top-0 w-full z-50 bg-surface-container-lowest shadow-sm border-b-4 border-b-secondary-fixed">
+  <nav class="flex justify-between items-center px-gutter h-20 max-w-container-max mx-auto">
+    <a href="index.html" class="text-2xl font-bold text-primary flex items-center gap-2">
+      <span class="material-symbols-outlined" style="font-size:32px">verified_user</span>
+      Vigil
+    </a>
+    <div class="hidden md:flex gap-8 items-center text-sm font-medium">
+      <a href="index.html" class="text-on-surface-variant hover:text-primary transition-colors">Home</a>
+      <a href="scam-check.html" class="text-on-surface-variant hover:text-primary transition-colors">Check a Call</a>
+      <a href="fraud-map.html" class="text-on-surface-variant hover:text-primary transition-colors">Fraud Map</a>
+      <a href="case-intel.html" class="text-primary font-bold border-b-2 border-primary pb-1">Case Intelligence</a>
+    </div>
+  </nav>
+</header>
+
+<main class="flex-grow pt-32 pb-16 px-gutter max-w-container-max mx-auto w-full">
+  <div class="mb-10">
+    <div class="inline-flex items-center gap-2 px-3 py-1 bg-primary/10 text-primary rounded-full text-xs font-semibold mb-3">
+      <span class="material-symbols-outlined text-sm">shield_lock</span>
+      For Law Enforcement
+    </div>
+    <h1 class="text-3xl md:text-4xl font-extrabold mb-2">Case Intelligence</h1>
+    <p class="text-lg text-on-surface-variant max-w-2xl">
+      Already have multiple related fraud complaints? Link the linked phone numbers and accounts here to generate a court-ready fraud network intelligence report.
+    </p>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+    <!-- Form -->
+    <section class="lg:col-span-7 bg-white rounded-xl shadow-sm border border-outline-variant p-8">
+      <div class="flex items-center justify-between mb-6 border-b border-surface-container-low pb-4 flex-wrap gap-2">
+        <h2 class="text-xl font-bold">Intelligence Intake</h2>
+        <button onclick="fillSampleData()" class="text-primary text-sm font-semibold hover:underline flex items-center gap-1.5">
+          <span class="material-symbols-outlined text-sm">auto_awesome</span>
+          Try with sample case
+        </button>
+      </div>
+
+      <div class="space-y-5">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-bold uppercase tracking-wide text-on-surface-variant mb-1.5">Case ID</label>
+            <input id="caseId" type="text" class="w-full border border-outline-variant rounded-lg p-3 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="VGL-2026-0001"/>
+          </div>
+          <div>
+            <label class="block text-xs font-bold uppercase tracking-wide text-on-surface-variant mb-1.5">Victim Name (optional)</label>
+            <input id="victimName" type="text" class="w-full border border-outline-variant rounded-lg p-3 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Full name"/>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold uppercase tracking-wide text-on-surface-variant mb-1.5">Linked Phone Numbers</label>
+          <div id="phoneChips" class="flex flex-wrap gap-2 p-3 border border-outline-variant rounded-lg bg-surface-container-low min-h-[52px]">
+            <span class="text-on-surface-variant text-sm italic">Add numbers identified in the investigation...</span>
+          </div>
+          <div class="flex gap-2 mt-2">
+            <input id="phoneInput" type="tel" class="flex-grow border border-outline-variant rounded-lg p-2.5" placeholder="9876543210" onkeydown="if(event.key==='Enter'){event.preventDefault();addChip('phone')}"/>
+            <button type="button" onclick="addChip('phone')" class="bg-surface-container-high px-4 rounded-lg font-semibold text-sm">Add</button>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold uppercase tracking-wide text-on-surface-variant mb-1.5">Linked Accounts</label>
+          <div id="accountChips" class="flex flex-wrap gap-2 p-3 border border-outline-variant rounded-lg bg-surface-container-low min-h-[52px]">
+            <span class="text-on-surface-variant text-sm italic">Add account IDs, UPI handles, wallets...</span>
+          </div>
+          <div class="flex gap-2 mt-2">
+            <input id="accountInput" type="text" class="flex-grow border border-outline-variant rounded-lg p-2.5" placeholder="ACC001 or upi@bank" onkeydown="if(event.key==='Enter'){event.preventDefault();addChip('account')}"/>
+            <button type="button" onclick="addChip('account')" class="bg-surface-container-high px-4 rounded-lg font-semibold text-sm">Add</button>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold uppercase tracking-wide text-on-surface-variant mb-1.5">Summary Notes</label>
+          <textarea id="notes" rows="4" class="w-full border border-outline-variant rounded-lg p-3 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Brief overview of the fraud pattern and suspicion..."></textarea>
+        </div>
+
+        <div id="formError" class="hidden bg-error/10 text-error p-3 rounded-lg text-sm"></div>
+
+        <button onclick="generatePacket()" id="generateBtn" class="w-full bg-primary text-white font-semibold py-4 rounded-xl hover:brightness-110 transition-all flex items-center justify-center gap-2">
+          <span class="material-symbols-outlined">hub</span>
+          Generate Case Packet
+        </button>
+      </div>
+    </section>
+
+    <!-- Results -->
+    <aside class="lg:col-span-5 flex flex-col gap-6">
+      <div class="bg-white rounded-xl shadow-sm border border-outline-variant overflow-hidden">
+        <div class="bg-surface-container-high px-4 py-2.5 flex items-center gap-2">
+          <span class="material-symbols-outlined text-primary text-lg">hub</span>
+          <span class="text-sm font-bold uppercase">Fraud Network Summary</span>
+        </div>
+        <div class="grid grid-cols-3 divide-x divide-surface-container-low">
+          <div class="p-5 text-center">
+            <div class="text-xs text-on-surface-variant uppercase font-semibold mb-1">Nodes</div>
+            <div id="nodeCount" class="text-2xl font-extrabold">—</div>
+          </div>
+          <div class="p-5 text-center">
+            <div class="text-xs text-on-surface-variant uppercase font-semibold mb-1">Edges</div>
+            <div id="edgeCount" class="text-2xl font-extrabold">—</div>
+          </div>
+          <div class="p-5 text-center">
+            <div class="text-xs text-on-surface-variant uppercase font-semibold mb-1">Clusters</div>
+            <div id="clusterCount" class="text-2xl font-extrabold text-secondary">—</div>
+          </div>
+        </div>
+      </div>
+
+      <div id="reportSection" class="opacity-40 transition-opacity duration-500 bg-white rounded-xl shadow-sm border border-outline-variant p-5">
+        <div class="flex items-center gap-4 mb-4">
+          <div class="w-12 h-12 bg-surface-container-high rounded-lg flex items-center justify-center">
+            <span class="material-symbols-outlined text-primary text-2xl">picture_as_pdf</span>
+          </div>
+          <div>
+            <h3 class="font-bold text-sm">Vigil Case Intelligence Packet</h3>
+            <p class="text-xs text-on-surface-variant">Court-ready formatted PDF report</p>
+          </div>
+        </div>
+        <button id="downloadBtn" disabled class="w-full bg-surface-container-high text-on-surface-variant font-semibold py-3 rounded-lg flex items-center justify-center gap-2 cursor-not-allowed transition-all">
+          <span class="material-symbols-outlined">download</span>
+          Download PDF Report
+        </button>
+      </div>
+
+      <div class="bg-white rounded-xl shadow-sm border border-outline-variant p-5">
+        <p class="text-sm text-on-surface-variant leading-relaxed">
+          <span class="material-symbols-outlined text-sm align-middle text-primary">info</span>
+          This tool links complaint metadata (phone numbers, accounts) into a network graph, clusters likely fraud rings, and generates a formatted report suitable for investigative case files.
+        </p>
+      </div>
+    </aside>
+  </div>
+</main>
+
+<footer class="bg-surface-dim border-t border-outline-variant py-8 mt-auto">
+  <div class="flex flex-col md:flex-row justify-between items-center px-gutter max-w-container-max mx-auto gap-4">
+    <div class="text-lg font-bold text-on-surface">Vigil</div>
+    <div class="text-on-surface-variant text-sm text-center">
+      Vigil is an AI-assisted tool. For emergencies, contact local police or dial <strong class="text-error">1930</strong> (Cybercrime Helpline).
+    </div>
+  </div>
+</footer>
+
+<script>
+  const BACKEND_URL = "https://vigil-backend-jyqo.onrender.com";
+  const chips = { phone: [], account: [] };
+  let lastPayload = null;
+
+  function addChip(type) {
+    const input = document.getElementById(type + 'Input');
+    const container = document.getElementById(type + 'Chips');
+    const val = input.value.trim();
+    if (!val) return;
+
+    if (chips[type].length === 0) container.innerHTML = '';
+    chips[type].push(val);
+
+    const chip = document.createElement('div');
+    chip.className = 'chip px-3 py-1.5 rounded-full text-xs font-semibold flex items-center gap-1.5';
+    chip.innerHTML = `${val} <span class="material-symbols-outlined text-sm cursor-pointer" onclick="removeChip('${type}','${val}',this)">close</span>`;
+    container.appendChild(chip);
+    input.value = '';
+  }
+
+  function removeChip(type, val, el) {
+    chips[type] = chips[type].filter(v => v !== val);
+    el.parentElement.remove();
+    const container = document.getElementById(type + 'Chips');
+    if (chips[type].length === 0) {
+      container.innerHTML = `<span class="text-on-surface-variant text-sm italic">Add ${type === 'phone' ? 'numbers' : 'accounts'} identified in the investigation...</span>`;
+    }
+  }
+
+  function fillSampleData() {
+    document.getElementById('caseId').value = 'VGL-2026-0042';
+    document.getElementById('victimName').value = 'Rahul Mehta';
+    document.getElementById('notes').value = 'Victim received a video call from a fraudster impersonating a CBI officer, was threatened with arrest, and coerced into transferring 2 lakh rupees to a "verification account" over the course of three hours.';
+
+    chips.phone = []; chips.account = [];
+    const pContainer = document.getElementById('phoneChips');
+    pContainer.innerHTML = '';
+    ['9876543210', '9123456780'].forEach(num => {
+      chips.phone.push(num);
+      const chip = document.createElement('div');
+      chip.className = 'chip px-3 py-1.5 rounded-full text-xs font-semibold flex items-center gap-1.5';
+      chip.innerHTML = `${num} <span class="material-symbols-outlined text-sm cursor-pointer" onclick="removeChip('phone','${num}',this)">close</span>`;
+      pContainer.appendChild(chip);
+    });
+
+    const aContainer = document.getElementById('accountChips');
+    aContainer.innerHTML = '';
+    ['ACC010', 'ACC011'].forEach(acc => {
+      chips.account.push(acc);
+      const chip = document.createElement('div');
+      chip.className = 'chip px-3 py-1.5 rounded-full text-xs font-semibold flex items-center gap-1.5';
+      chip.innerHTML = `${acc} <span class="material-symbols-outlined text-sm cursor-pointer" onclick="removeChip('account','${acc}',this)">close</span>`;
+      aContainer.appendChild(chip);
+    });
+  }
+
+  function buildPayload() {
+    return {
+      case_id: document.getElementById('caseId').value.trim(),
+      victim_name: document.getElementById('victimName').value.trim() || null,
+      linked_numbers: chips.phone,
+      linked_accounts: chips.account,
+      summary_notes: document.getElementById('notes').value.trim(),
+    };
+  }
+
+  async function generatePacket() {
+    const payload = buildPayload();
+    const errorBox = document.getElementById('formError');
+    const btn = document.getElementById('generateBtn');
+    errorBox.classList.add('hidden');
+
+    if (!payload.case_id) {
+      errorBox.textContent = 'Please enter a Case ID.';
+      errorBox.classList.remove('hidden');
+      return;
+    }
+    if (payload.linked_numbers.length === 0 && payload.linked_accounts.length === 0) {
+      errorBox.textContent = 'Please add at least one linked phone number or account.';
+      errorBox.classList.remove('hidden');
+      return;
+    }
+
+    btn.disabled = true;
+    btn.innerHTML = '<span class="material-symbols-outlined spin">progress_activity</span> Generating...';
+
+    try {
+      await fetch(`${BACKEND_URL}/graph/ingest`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      const res = await fetch(`${BACKEND_URL}/graph/case-packet`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) throw new Error('Server error');
+      const data = await res.json();
+
+      document.getElementById('nodeCount').textContent = data.network_nodes ?? 0;
+      document.getElementById('edgeCount').textContent = data.network_edges ?? 0;
+      document.getElementById('clusterCount').textContent = data.clusters_detected ?? 0;
+
+      const reportSection = document.getElementById('reportSection');
+      reportSection.classList.remove('opacity-40');
+
+      const downloadBtn = document.getElementById('downloadBtn');
+      downloadBtn.disabled = false;
+      downloadBtn.classList.remove('bg-surface-container-high', 'text-on-surface-variant', 'cursor-not-allowed');
+      downloadBtn.classList.add('bg-primary', 'text-white', 'hover:brightness-110');
+
+      lastPayload = payload;
+      downloadBtn.onclick = downloadPdf;
+
+    } catch (err) {
+      errorBox.textContent = "We couldn't reach Vigil's servers. Please try again in a moment.";
+      errorBox.classList.remove('hidden');
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = '<span class="material-symbols-outlined">hub</span> Generate Case Packet';
+    }
+  }
+
+  async function downloadPdf() {
+    if (!lastPayload) return;
+    const downloadBtn = document.getElementById('downloadBtn');
+    const originalText = downloadBtn.innerHTML;
+    downloadBtn.innerHTML = '<span class="material-symbols-outlined spin">progress_activity</span> Preparing PDF...';
+    downloadBtn.disabled = true;
+
+    try {
+      const res = await fetch(`${BACKEND_URL}/graph/case-packet/pdf`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(lastPayload),
+      });
+      if (!res.ok) throw new Error('Failed to generate PDF');
+
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `vigil_case_packet_${lastPayload.case_id}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      alert("Couldn't download the PDF. Please try again.");
+    } finally {
+      downloadBtn.innerHTML = originalText;
+      downloadBtn.disabled = false;
+    }
+  }
+</script>
+</body>
+</html>

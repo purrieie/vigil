@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Vigil | Fraud Map</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          primary: "#004ac6", "primary-container": "#2563eb",
+          secondary: "#1b6d24", "secondary-fixed": "#a3f69c",
+          tertiary: "#943700", error: "#ba1a1a",
+          background: "#faf8ff", "surface-container-low": "#f3f3fe", "surface-container-lowest": "#ffffff",
+          "surface-dim": "#d9d9e5", "on-surface": "#191b23", "on-surface-variant": "#434655",
+          "outline-variant": "#c3c6d7",
+        },
+        spacing: { gutter: "24px", xs: "8px", sm: "16px", md: "24px", lg: "32px", xl: "48px", "container-max": "1200px" },
+        fontFamily: { sans: ["Inter", "sans-serif"] },
+      },
+    },
+  };
+</script>
+<style>
+  .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+  body { font-family: 'Inter', sans-serif; }
+  .map-container { height: calc(100vh - 80px); }
+  #map { height: 100%; width: 100%; }
+  .glass-panel { background: rgba(255,255,255,0.92); backdrop-filter: blur(10px); border: 1px solid rgba(229,231,235,0.6); }
+  .leaflet-popup-content-wrapper { border-radius: 10px; }
+</style>
+</head>
+<body class="bg-background text-on-surface">
+
+<nav class="bg-surface-container-lowest fixed top-0 w-full z-[1000] border-b-4 border-b-secondary-fixed shadow-sm">
+  <div class="flex justify-between items-center px-gutter h-20 max-w-container-max mx-auto">
+    <a href="index.html" class="text-2xl font-bold text-primary flex items-center gap-2">
+      <span class="material-symbols-outlined" style="font-size:32px">verified_user</span>
+      Vigil
+    </a>
+    <div class="hidden md:flex gap-8 items-center text-sm font-medium">
+      <a href="index.html" class="text-on-surface-variant hover:text-primary transition-colors">Home</a>
+      <a href="scam-check.html" class="text-on-surface-variant hover:text-primary transition-colors">Check a Call</a>
+      <a href="fraud-map.html" class="text-primary font-bold border-b-2 border-primary pb-1">Fraud Map</a>
+      <a href="case-intel.html" class="text-on-surface-variant hover:text-primary transition-colors">Case Intelligence</a>
+    </div>
+  </div>
+</nav>
+
+<main class="pt-20 relative map-container overflow-hidden">
+  <div id="map" class="absolute inset-0 z-0"></div>
+
+  <div class="absolute top-6 left-6 bottom-6 w-80 glass-panel rounded-xl shadow-xl z-[500] flex flex-col pointer-events-auto">
+    <div class="p-6 border-b border-outline-variant/30">
+      <h2 class="text-xl font-bold">Fraud Hotspots</h2>
+      <p class="text-sm text-on-surface-variant mt-1">Live complaint density across India</p>
+    </div>
+    <div id="hotspotList" class="flex-1 overflow-y-auto p-4 space-y-3">
+      <div class="text-center text-on-surface-variant text-sm py-8">Loading hotspot data...</div>
+    </div>
+  </div>
+
+  <div class="absolute bottom-6 right-6 glass-panel p-4 rounded-xl shadow-lg z-[500] w-56">
+    <h4 class="text-sm font-bold mb-3">Risk Intensity Legend</h4>
+    <div class="space-y-2">
+      <div class="flex items-center gap-3">
+        <div class="w-4 h-4 rounded-full bg-error"></div>
+        <span class="text-sm text-on-surface-variant">High density</span>
+      </div>
+      <div class="flex items-center gap-3">
+        <div class="w-4 h-4 rounded-full bg-tertiary"></div>
+        <span class="text-sm text-on-surface-variant">Medium density</span>
+      </div>
+      <div class="flex items-center gap-3">
+        <div class="w-4 h-4 rounded-full bg-primary"></div>
+        <span class="text-sm text-on-surface-variant">Low density</span>
+      </div>
+    </div>
+  </div>
+
+  <div id="errorBanner" class="hidden absolute top-6 right-6 glass-panel p-4 rounded-xl shadow-lg z-[500] max-w-xs text-sm text-error">
+    Couldn't load live fraud data. The backend may be waking up — try refreshing in a moment.
+  </div>
+</main>
+
+<footer class="bg-surface-dim border-t border-outline-variant py-6 relative z-[600]">
+  <div class="flex flex-col md:flex-row justify-between items-center px-gutter max-w-container-max mx-auto gap-3">
+    <div class="text-lg font-bold text-on-surface">Vigil</div>
+    <div class="text-on-surface-variant text-sm text-center">
+      Vigil is an AI-assisted tool. For emergencies, contact local police or dial <strong class="text-error">1930</strong> (Cybercrime Helpline).
+    </div>
+  </div>
+</footer>
+
+<script>
+  const BACKEND_URL = "https://vigil-backend-jyqo.onrender.com";
+
+  const map = L.map('map', { zoomControl: true }).setView([22.5, 79.5], 5);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 18,
+    attribution: '&copy; OpenStreetMap contributors'
+  }).addTo(map);
+
+  function riskColor(count, max) {
+    const ratio = count / max;
+    if (ratio > 0.66) return "#ba1a1a";
+    if (ratio > 0.33) return "#943700";
+    return "#004ac6";
+  }
+
+  async function loadHotspots() {
+    try {
+      const res = await fetch(`${BACKEND_URL}/geo/hotspots`);
+      if (!res.ok) throw new Error("bad response");
+      const data = await res.json();
+
+      if (!Array.isArray(data) || data.length === 0) {
+        document.getElementById("hotspotList").innerHTML =
+          '<div class="text-center text-on-surface-variant text-sm py-8">No hotspot data available yet.</div>';
+        return;
+      }
+
+      const maxCount = Math.max(...data.map(d => d.count));
+      const listEl = document.getElementById("hotspotList");
+      listEl.innerHTML = "";
+
+      data.slice(0, 15).forEach((spot, i) => {
+        const color = riskColor(spot.count, maxCount);
+        const radius = 8 + (spot.count / maxCount) * 22;
+
+        setTimeout(() => {
+          const circle = L.circleMarker([spot.grid_lat, spot.grid_lon], {
+            radius: radius,
+            fillColor: color,
+            color: color,
+            weight: 1,
+            fillOpacity: 0.45,
+          }).addTo(map);
+          circle.bindPopup(`<strong>${spot.count}</strong> reports near (${spot.grid_lat.toFixed(2)}, ${spot.grid_lon.toFixed(2)})`);
+        }, i * 60);
+
+        const row = document.createElement("div");
+        row.className = "flex items-center justify-between p-2.5 hover:bg-surface-container-low rounded-lg transition-all cursor-pointer";
+        row.innerHTML = `
+          <div class="flex items-center gap-3">
+            <div class="w-2 h-10 rounded-full" style="background:${color}"></div>
+            <div>
+              <p class="font-semibold text-sm">Lat ${spot.grid_lat.toFixed(2)}, Lon ${spot.grid_lon.toFixed(2)}</p>
+              <p class="text-xs text-on-surface-variant">Grid cluster</p>
+            </div>
+          </div>
+          <div class="text-right">
+            <p class="text-lg font-bold" style="color:${color}">${spot.count}</p>
+            <p class="text-[10px] uppercase tracking-wider font-bold" style="color:${color}">reports</p>
+          </div>
+        `;
+        row.addEventListener("click", () => {
+          map.flyTo([spot.grid_lat, spot.grid_lon], 9, { duration: 1 });
+        });
+        listEl.appendChild(row);
+      });
+    } catch (err) {
+      document.getElementById("errorBanner").classList.remove("hidden");
+      document.getElementById("hotspotList").innerHTML =
+        '<div class="text-center text-error text-sm py-8">Failed to load hotspot data.</div>';
+    }
+  }
+
+  loadHotspots();
+</script>
+</body>
+</html>
