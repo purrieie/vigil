@@ -1,11 +1,12 @@
- Vigil — AI-Powered Digital Public Safety Intelligence Platform
-
+#** Vigil — AI-Powered Digital Public Safety Intelligence Platform
+**
 Vigil is an AI-powered platform built for the ET AI Hackathon (Problem
 Statement 6: Digital Public Safety) to help citizens and law enforcement
 detect, disrupt, and respond to digital fraud — with a focus on India's
 rapidly growing "digital arrest" scam epidemic.
 
 **Live demo:** https://vigil-analytics.netlify.app/
+
 **API docs:** https://vigil-backend-jyqo.onrender.com/docs
 
 ## The Problem
